@@ -1,3 +1,13 @@
+---
+layout: page
+title: Tools for Test-Driven Infrastructure
+tagline:
+categories:
+- blog
+tags: 
+- beaker
+- tdd
+---
 <p>Test-driven development can bring a number of benefits. An approach where you write tests first 
 makes you think about what you need to develop. Subsequent refactoring generally leads to 
 designs that emerge in the code with high levels of test coverage.</p>
