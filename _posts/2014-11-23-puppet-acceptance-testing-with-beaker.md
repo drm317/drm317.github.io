@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Tools for Test-Driven Infrastructure
+title: Puppet Acceptance Testing With Beaker
 tagline:
 categories:
 - blog
