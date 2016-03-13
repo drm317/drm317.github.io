@@ -1,0 +1,223 @@
+<p>Test-driven development can bring a number of benefits. An approach where you write tests first 
+makes you think about what you need to develop. Subsequent refactoring generally leads to 
+designs that emerge in the code with high levels of test coverage.</p>
+
+<p>Recently PuppetLabs introduced a new tool for acceptance testing 
+called <a href="https://github.com/puppetlabs/beaker/wiki">Beaker</a>.
+A Puppet module is applied to a system under test (SUT) which in turn is 
+acceptance tested. These tests would normally complement a unit test-driven 
+approach to writing modules with <a href="http://rspec-puppet.com/">rspec-puppet</a>.</p>
+
+<h3>Acceptance Testing with Beaker</h3>
+
+<p>Beaker can manage the temporary creation of a SUT via a hypervisor.
+The Puppet module under test is installed and then the tests are executed.</p>
+
+<h3>Install Beaker</h3>
+
+<p>Beaker can be installed via a Gemfile</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">group</span> <span class="ss">:development</span><span class="p">,</span> <span class="ss">:test</span> <span class="k">do</span>
+<span class="p">.</span><span class="nf">.</span><span class="p">.</span>
+  <span class="nf">gem</span> <span class="s1">'beaker'</span><span class="p">,</span> <span class="ss">:require</span> <span class="o">=&gt;</span> <span class="kp">false</span>
+  <span class="n">gem</span> <span class="s1">'beaker-rspec'</span><span class="p">,</span> <span class="ss">:require</span> <span class="o">=&gt;</span> <span class="kp">false</span>
+<span class="p">.</span><span class="nf">.</span><span class="p">.</span>
+<span class="nf">end</span></code></pre></figure>
+
+<p>Use bundler to install the gems</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">gem</span> <span class="n">install</span> <span class="n">bundler</span>
+<span class="n">bundle</span> <span class="n">install</span></code></pre></figure>
+
+<h3>Beaker Configuration</h3>
+
+<p>Typically Beaker acceptance tests are held in a <strong>spec/acceptance</strong> subdirectory.</p>
+
+<p>A <strong>spec/acceptance/nodesets</strong> subdirectory defines the machines that we want to test against.
+Nodesets are yaml files that define the machine’s name, location and platform. The 
+hypervisor type is also specified. Examples for Vagrant can be found 
+<a href="https://github.com/puppetlabs/beaker/wiki/Example-Vagrant-Hosts-Files">here</a>.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">module</span>
+  <span class="nn">spec</span>      
+      <span class="n">acceptance</span>
+          <span class="o">&lt;</span><span class="n">acceptance</span><span class="o">-</span><span class="nb">test</span><span class="o">&gt;</span><span class="n">_spec</span><span class="p">.</span><span class="nf">rb</span>
+          <span class="n">nodesets</span>
+              <span class="n">default</span><span class="p">.</span><span class="nf">yml</span>
+              <span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span><span class="p">.</span><span class="nf">yml</span>
+              <span class="p">.</span><span class="nf">.</span><span class="p">.</span>
+      <span class="nf">defines</span>
+      <span class="n">fixtures</span>
+      <span class="n">spec_helper</span><span class="p">.</span><span class="nf">rb</span>
+      <span class="n">spec_helper_acceptance</span><span class="p">.</span><span class="nf">rb</span>
+  <span class="n">tests</span></code></pre></figure>
+
+<p>The spec_helper_acceptance.rb file provides the basic configuration. The module 
+under test is copied on to each host. UNSUPPORTED_PLATFORMS provides an 
+easy way to de-scope tests for a particular platform.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">'beaker-rspec/spec_helper'</span>
+<span class="nb">require</span> <span class="s1">'beaker-rspec/helpers/serverspec'</span>
+
+<span class="p">.</span><span class="nf">.</span><span class="p">.</span>
+<span class="nf">hosts</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">host</span><span class="o">|</span>
+  <span class="n">install_puppet</span>
+<span class="k">end</span>
+<span class="p">.</span><span class="nf">.</span><span class="o">.</span>
+
+<span class="no">UNSUPPORTED_PLATFORMS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'windows'</span><span class="p">,</span><span class="s1">'AIX'</span><span class="p">,</span><span class="s1">'Solaris'</span><span class="p">]</span>
+<span class="no">RSpec</span><span class="p">.</span><span class="nf">configure</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="n">proj_root</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">expand_path</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">dirname</span><span class="p">(</span><span class="kp">__FILE__</span><span class="p">),</span> <span class="s1">'..'</span><span class="p">))</span>
+  <span class="n">c</span><span class="p">.</span><span class="nf">formatter</span> <span class="o">=</span> <span class="ss">:documentation</span>
+  <span class="n">c</span><span class="p">.</span><span class="nf">before</span> <span class="ss">:suite</span> <span class="k">do</span>
+    <span class="n">hosts</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">host</span><span class="o">|</span>
+      <span class="n">copy_module_to</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="ss">:source</span> <span class="o">=&gt;</span> <span class="n">proj_root</span><span class="p">,</span> <span class="ss">:module_name</span> <span class="o">=&gt;</span> <span class="s1">'module'</span><span class="p">)</span>
+      
+      <span class="p">.</span><span class="nf">.</span><span class="p">.</span>
+      
+      <span class="nf">on</span> <span class="n">host</span><span class="p">,</span> <span class="n">puppet</span><span class="p">(</span><span class="s1">'module'</span><span class="p">,</span><span class="s1">'install'</span><span class="p">,</span><span class="s1">'puppetlabs-stdlib'</span><span class="p">),</span> <span class="p">{</span> <span class="ss">:acceptable_exit_codes</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">}</span>
+      <span class="n">on</span> <span class="n">host</span><span class="p">,</span> <span class="n">puppet</span><span class="p">(</span><span class="s1">'module'</span><span class="p">,</span><span class="s1">'install'</span><span class="p">,</span><span class="s1">'puppetlabs-concat'</span><span class="p">),</span> <span class="p">{</span> <span class="ss">:acceptable_exit_codes</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></figure>
+
+<h3>Acceptance Tests</h3>
+
+<p>The acceptance tests describe the expected behaviour and state of the SUT and are 
+written in RSpec. In this example a test context is defined for user (and group) creation.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="err">‘</span><span class="n">spec_helper_acceptance</span><span class="s1">'
+
+describe '</span><span class="k">module</span> <span class="nn">defintion</span><span class="s1">', :unless =&gt; UNSUPPORTED_PLATFORMS.include?(fact('</span><span class="n">osfamily</span><span class="s1">')) do
+
+  context '</span><span class="n">user</span> <span class="n">is</span> <span class="n">created</span> <span class="n">with</span> <span class="n">a</span> <span class="n">valid</span> <span class="n">input</span> <span class="n">parameter</span><span class="err">’</span> <span class="k">do</span>
+    <span class="n">it</span> <span class="s1">'should work with without errors’ do
+      pp = &lt;&lt;-EOS
+        $theuser = {
+        '</span><span class="n">auser</span><span class="s1">' =&gt; { '</span><span class="n">shell</span><span class="s1">' =&gt; '</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">bash</span><span class="s1">' }
+      }
+      module { '</span><span class="n">auser</span><span class="s1">':
+        user =&gt; $theuser
+      }
+      EOS
+      apply_manifest(pp, :catch_failures =&gt; true)
+      expect(apply_manifest(pp, :catch_failures =&gt; true).exit_code).to be_zero
+   end
+   
+   describe user('</span><span class="n">auser</span><span class="s1">') do
+    it { is_expected.to exist }
+    it { is_expected.to belong_to_group '</span><span class="n">auser</span><span class="s1">' }
+   end
+   
+   describe group('</span><span class="n">auser</span><span class="err">'</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="p">.</span><span class="nf">to</span> <span class="n">exist</span> <span class="p">}</span>
+   <span class="k">end</span>
+    
+ <span class="k">end</span>
+<span class="k">end</span></code></pre></figure>
+
+<p>This test context applies the manifest, expects it to execute without errors and then 
+validates that a user is created in the correct group.</p>
+
+<p>Tests can be run with</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">bundle</span> <span class="nb">exec</span> <span class="n">rspec</span> <span class="n">spec</span><span class="o">/</span><span class="n">acceptance</span></code></pre></figure>
+
+<h3>Test Execution</h3>
+
+<p>Beaker will initially use the specified hypervisor to bring up a SUT.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="no">Hypervisor</span> <span class="k">for</span> <span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="n">is</span> <span class="n">vagrant</span>
+<span class="no">Beaker</span><span class="o">::</span><span class="no">Hypervisor</span><span class="p">,</span> <span class="n">found</span> <span class="n">some</span> <span class="n">vagrant</span> <span class="n">boxes</span> <span class="n">to</span> <span class="n">create</span>
+<span class="n">created</span> <span class="no">Vagrantfile</span> <span class="k">for</span> <span class="no">VagrantHost</span> <span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span>
+<span class="p">.</span><span class="nf">.</span><span class="o">.</span></code></pre></figure>
+
+<p>Puppet will then be installed and the acceptance tests 
+within <strong>spec/acceptance</strong> will be performed.</p>
+
+<p>Generally each test applies manifests within the module for a particular context.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="err">$</span>  <span class="n">mktemp</span> <span class="o">-</span><span class="n">t</span> <span class="n">apply_manifest</span><span class="p">.</span><span class="nf">pp</span><span class="o">.</span><span class="no">XXXXXX</span>  
+<span class="sr">/tmp/</span><span class="n">apply_manifest</span><span class="p">.</span><span class="nf">pp</span><span class="p">.</span><span class="nf">ae1dqd</span>
+
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="n">executed</span> <span class="k">in</span> <span class="mi">0</span><span class="o">.</span><span class="mo">01</span> <span class="n">seconds</span>
+<span class="n">localhost</span> <span class="err">$</span> <span class="n">scp</span> <span class="sr">/var/</span><span class="n">folders</span><span class="o">/</span><span class="n">b4</span><span class="o">/</span><span class="n">whdj5tqn1_n_2783hl5cnvch0001bn</span><span class="o">/</span><span class="no">T</span><span class="o">/</span><span class="n">beaker20141123</span><span class="o">-</span><span class="mi">1076</span><span class="o">-</span><span class="n">b25en7</span> 
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span><span class="ss">:/</span><span class="n">tmp</span><span class="o">/</span><span class="n">apply_manifest</span><span class="p">.</span><span class="nf">pp</span><span class="p">.</span><span class="nf">ae1dqd</span> <span class="p">{</span><span class="ss">:ignore</span> <span class="o">=&gt;</span> <span class="p">}</span>
+
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="err">$</span>  <span class="n">env</span> <span class="no">PATH</span><span class="o">=</span><span class="s2">"/usr/bin:/opt/puppet-git-repos/hiera/bin:${PATH}"</span> 
+<span class="no">RUBYLIB</span><span class="o">=</span><span class="s2">"/opt/puppet-git-repos/hiera/lib:/opt/puppet-git-repos/hiera-puppet/lib:${RUBYLIB}"</span> 
+<span class="n">puppet</span> <span class="n">apply</span> <span class="o">--</span><span class="n">verbose</span> <span class="o">--</span><span class="n">detailed</span><span class="o">-</span><span class="n">exitcodes</span> <span class="sr">/tmp/</span><span class="n">apply_manifest</span><span class="p">.</span><span class="nf">pp</span><span class="p">.</span><span class="nf">ae1dqd</span>  
+
+<span class="p">[.</span><span class="nf">.</span><span class="o">.</span><span class="no">Puppet</span> <span class="no">Logging</span><span class="p">.</span><span class="nf">.</span><span class="o">.</span><span class="p">]</span>
+
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="n">executed</span> <span class="k">in</span> <span class="mi">6</span><span class="o">.</span><span class="mi">22</span> <span class="n">seconds</span>
+<span class="no">Exited</span><span class="p">:</span> <span class="mi">2</span></code></pre></figure>
+
+<p>The tests are then performed. Beaker resolves them to an underlying operating system 
+command in order to validate the assertion</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="no">User</span> <span class="s2">"auser"</span>
+
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="err">$</span>  <span class="nb">id</span> <span class="n">auser</span>  
+<span class="n">uid</span><span class="o">=</span><span class="mi">1001</span><span class="p">(</span><span class="n">auser</span><span class="p">)</span> <span class="n">gid</span><span class="o">=</span><span class="mi">1001</span><span class="p">(</span><span class="n">auser</span><span class="p">)</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1001</span><span class="p">(</span><span class="n">auser</span><span class="p">)</span>
+
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="n">executed</span> <span class="k">in</span> <span class="mi">0</span><span class="o">.</span><span class="mo">01</span> <span class="n">seconds</span>
+      <span class="n">should</span> <span class="n">exist</span> <span class="p">[]</span>
+      
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="err">$</span>  <span class="nb">id</span> <span class="n">auser</span> <span class="o">|</span> <span class="n">awk</span> <span class="s1">'{print $3}'</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">--</span> <span class="n">auser</span>  
+<span class="n">groups</span><span class="o">=</span><span class="mi">1001</span><span class="p">(</span><span class="n">auser</span><span class="p">)</span>
+
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="n">executed</span> <span class="k">in</span> <span class="mi">0</span><span class="o">.</span><span class="mo">01</span> <span class="n">seconds</span>
+      <span class="n">should</span> <span class="n">belong</span> <span class="n">to</span> <span class="n">group</span> <span class="s2">"auser"</span>
+    <span class="no">Group</span> <span class="s2">"auser"</span>
+
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="err">$</span>  <span class="n">getent</span> <span class="n">group</span> <span class="n">auser</span>  
+<span class="n">auser</span><span class="ss">:x</span><span class="p">:</span><span class="mi">1001</span><span class="p">:</span>
+
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="n">x64</span> <span class="n">executed</span> <span class="k">in</span> <span class="mi">0</span><span class="o">.</span><span class="mo">01</span> <span class="n">seconds</span>
+      <span class="n">should</span> <span class="n">exist</span> <span class="p">[]</span>      </code></pre></figure>
+
+<p>The hypervisor will then shutdown and destroy the SUT. 
+Beaker reports on the results when all the tests have completed.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="no">Destroying</span> <span class="n">vagrant</span> <span class="n">boxes</span>
+<span class="o">==&gt;</span> <span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="ss">x64: </span><span class="no">Forcing</span> <span class="n">shutdown</span> <span class="n">of</span> <span class="no">VM</span><span class="p">.</span><span class="nf">.</span><span class="p">.</span>
+<span class="nf">=</span><span class="o">=&gt;</span> <span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="mi">1404</span><span class="o">-</span><span class="ss">x64: </span><span class="no">Destroying</span> <span class="no">VM</span> <span class="n">and</span> <span class="n">associated</span> <span class="n">drives</span><span class="p">.</span><span class="nf">.</span><span class="o">.</span>
+
+<span class="no">Finished</span> <span class="k">in</span> <span class="mi">3</span> <span class="n">minutes</span> <span class="mi">8</span><span class="o">.</span><span class="mi">1</span> <span class="n">seconds</span>
+<span class="mi">20</span> <span class="n">examples</span><span class="p">,</span> <span class="mi">0</span> <span class="n">failures</span></code></pre></figure>
+
+<h3>Summary</h3>
+
+<ul>
+  <li>
+    <p>Beaker is a new acceptance testing tool from PuppetLabs.</p>
+  </li>
+  <li>
+    <p>It is designed to test a module by applying it to a SUT.</p>
+  </li>
+  <li>
+    <p>It is provided as a Ruby (1.8+) Gem.</p>
+  </li>
+  <li>
+    <p>It can manage a hypervisor to create a temporary SUT for testing.</p>
+  </li>
+  <li>
+    <p>Underlying operating system commands are used behind the scenes.</p>
+  </li>
+</ul>
+
+<h3>Further Reading</h3>
+
+<p><a href="https://github.com/puppetlabs/beaker/wiki">The Official Beaker Wiki Page</a></p>
+
+<p><a href="https://github.com/puppetlabs/beaker/wiki">The Beaker DSL API</a></p>
+
+<p><a href="https://github.com/puppetlabs/beaker">Beaker on GitHub</a></p>
+
+<p><a href="https://github.com/puppetlabs/puppetlabs-apache">Example module from PuppetLabs with Beaker tests - puppetlabs-apache</a></p>
+
+<p><a href="https://github.com/puppetlabs/puppetlabs-mysql">Example module from PuppetLabs with Beaker tests - puppetlabs-mysql</a></p>
+
+<p><a href="http://tech.opentable.co.uk/blog/2014/04/04/testing-puppet-with-beaker/">
+Testing Puppet with Beaker - Blog post by Liam Bennett</a></p>

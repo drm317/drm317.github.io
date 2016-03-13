@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Tools for Test-Driven Infrastructure</title>
+  <meta name="description" content="Short summaries of some popular tools for test-driven infrastructure.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="/blog/2014/12/06/tools-for-test-driven-infrastructure.html">
+  <link rel="alternate" type="application/rss+xml" title="Daniel Marlow" href="/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Daniel Marlow</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about.html">About</a>
+          
+        
+          
+          <a class="page-link" href="/archive.html">Archive</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+          <a class="page-link" href="/tags.html">Tags</a>
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Tools for Test-Driven Infrastructure</h1>
+  </header>
+
+  <div class="post-content">
+    <p>Short summaries of some popular tools for test-driven 
+infrastructure.</p>
+
+<h3>RSpec</h3>
+
+<h4>Description</h4>
+
+<p>Testing tool for the Ruby programming language.</p>
+
+<p><a href="http://rspec.info">http://rspec.info</a></p>
+
+<h4>Typical Usage</h4>
+
+<ul>
+  <li>Test-driven development for Ruby</li>
+  <li>Design through specification</li>
+  <li>Creation of mocks and stubs</li>
+</ul>
+
+<h4>Code Example</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1"># cricket_spec.rb</span>
+<span class="nb">require</span> <span class="s1">'cricket'</span>
+
+<span class="n">describe</span> <span class="no">Cricket</span><span class="p">,</span> <span class="s2">"#score"</span> <span class="k">do</span>
+  <span class="n">it</span> <span class="s2">"returns 0 for maiden over"</span> <span class="k">do</span>
+    <span class="n">cricket</span> <span class="o">=</span> <span class="no">Cricket</span><span class="p">.</span><span class="nf">new</span>
+    <span class="mi">6</span><span class="p">.</span><span class="nf">times</span> <span class="p">{</span> <span class="n">cricket</span><span class="p">.</span><span class="nf">run</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">}</span>
+    <span class="n">cricket</span><span class="p">.</span><span class="nf">score</span><span class="p">.</span><span class="nf">should</span> <span class="n">eq</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h3>RSpec-Puppet</h3>
+
+<h4>Description</h4>
+
+<p>RSpec test tool for Puppet manifests.</p>
+
+<p><a href="http://rspec-puppet.com">http://rspec-puppet.com</a></p>
+
+<h4>Typical Usage</h4>
+
+<ul>
+  <li>RSpec tests for Puppet modules</li>
+  <li>Specification tests during module development</li>
+</ul>
+
+<h4>Code Example</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'spec_helper'</span>
+
+<span class="n">describe</span> <span class="s1">'logrotate::rule'</span> <span class="k">do</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:title</span><span class="p">)</span> <span class="p">{</span> <span class="s1">'nginx'</span> <span class="p">}</span>
+
+  <span class="n">it</span> <span class="p">{</span> <span class="n">should</span> <span class="n">contain_class</span><span class="p">(</span><span class="s1">'logrotate::rule'</span><span class="p">)</span> <span class="p">}</span>
+
+  <span class="n">context</span> <span class="s1">'with compress =&gt; true'</span> <span class="k">do</span>
+    <span class="n">let</span><span class="p">(</span><span class="ss">:params</span><span class="p">)</span> <span class="p">{</span> <span class="p">{</span><span class="ss">:compress</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">}</span> <span class="p">}</span>
+
+    <span class="n">it</span> <span class="k">do</span>
+      <span class="n">should</span> <span class="n">contain_file</span><span class="p">(</span><span class="s1">'/etc/logrotate.d/nginx'</span><span class="p">)</span> <span class="p">\</span>
+        <span class="p">.</span><span class="nf">with_content</span><span class="p">(</span><span class="sr">/^\s*compress$/</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h3>Beaker</h3>
+
+<h4>Description</h4>
+
+<p>PuppetLabs acceptance testing tool.</p>
+
+<p><a href="https://github.com/puppetlabs/beaker">https://github.com/puppetlabs/beaker</a></p>
+
+<h4>Typical Usage</h4>
+
+<ul>
+  <li>Puppet acceptance testing</li>
+  <li>Virtual machines or containers can be provisioned for tests</li>
+  <li>Tests run on the server via SSH</li>
+</ul>
+
+<h4>Example Scenarios</h4>
+
+<ul>
+  <li>Module should start a service</li>
+  <li>Module should add a file “foo”</li>
+  <li>Module should add a directory “bar”</li>
+</ul>
+
+<h4>Code Example</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'spec_helper_acceptance'</span>
+
+<span class="n">describe</span> <span class="s1">'themodule::custom_file define'</span> <span class="k">do</span>
+  <span class="n">context</span> <span class="s1">'invalid file'</span> <span class="k">do</span>
+    <span class="n">it</span> <span class="s1">'should not add the file'</span> <span class="k">do</span>
+      <span class="n">pp</span> <span class="o">=</span> <span class="o">&lt;&lt;-</span><span class="no">EOS</span><span class="sh">
+        class { 'themodule': }
+        themodule::custom_file { 'acceptance_test':
+          content =&gt; 'IS_INVALID',
+        }
+</span><span class="no">      EOS</span>
+
+      <span class="n">apply_manifest</span><span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="ss">:expect_failures</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
+    <span class="k">end</span>
+
+    <span class="n">describe</span> <span class="n">file</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="vg">$config_dir</span><span class="si">}</span><span class="s2">/acceptance_test.conf"</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="p">.</span><span class="nf">not_to</span> <span class="n">be_file</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h3>Infrataster</h3>
+
+<h4>Description</h4>
+
+<p>Infrastructure behaviour testing framework</p>
+
+<p><a href="https://github.com/ryotarai/infrataster">https://github.com/ryotarai/infrataster</a></p>
+
+<h4>Typical Usage</h4>
+
+<ul>
+  <li>System behaviour testing</li>
+  <li>Test the external <strong>behaviour</strong> of a system</li>
+  <li>Tests run from an external harness</li>
+</ul>
+
+<h4>Example Scenarios</h4>
+
+<ul>
+  <li>Valid web service response is returned</li>
+  <li>SQL statement returns the correct results</li>
+</ul>
+
+<h4>Code Example</h4>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'spec_helper'</span>
+
+<span class="n">describe</span> <span class="n">server</span><span class="p">(</span><span class="ss">:web</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">describe</span> <span class="n">http</span><span class="p">(</span><span class="s1">'http://web'</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">it</span> <span class="s2">"responds content including 'Hello World'"</span> <span class="k">do</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="nf">body</span><span class="p">).</span><span class="nf">to</span> <span class="kp">include</span><span class="p">(</span><span class="s1">'Hello World'</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="n">it</span> <span class="s2">"responds OK 200"</span> <span class="k">do</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="nf">status</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="n">it</span> <span class="s2">"responds as 'text/html'"</span> <span class="k">do</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s1">'content-type'</span><span class="p">]).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="s1">'text/html'</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h3>ServerSpec</h3>
+
+<h4>Description</h4>
+
+<p>RSpec test tool for checking servers are configured correctly.</p>
+
+<p><a href="http://serverspec.org">http://serverspec.org</a></p>
+
+<h4>Typical Usage</h4>
+
+<ul>
+  <li>Infrastructure installation testing</li>
+  <li>Test the internal <strong>state</strong> of a configured server</li>
+  <li>Tests run on the server via SSH</li>
+</ul>
+
+<h4>Example Scenarios</h4>
+
+<ul>
+  <li>Service installed</li>
+  <li>User present</li>
+  <li>Directory present</li>
+</ul>
+
+<h4>Code Example</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'spec_helper'</span>
+
+<span class="n">describe</span> <span class="n">package</span><span class="p">(</span><span class="s1">'apache'</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">it</span> <span class="p">{</span> <span class="n">should</span> <span class="n">be_installed</span> <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="n">describe</span> <span class="n">service</span><span class="p">(</span><span class="s1">'apache'</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">it</span> <span class="p">{</span> <span class="n">should</span> <span class="n">be_running</span>   <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="n">describe</span> <span class="n">port</span><span class="p">(</span><span class="mi">80</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">it</span> <span class="p">{</span> <span class="n">should</span> <span class="n">be_listening</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<hr />
+
+<h3>Puppet-Lint</h3>
+
+<h4>Description</h4>
+
+<p>Tests that a Puppet manifest conforms to a style guide</p>
+
+<p><a href="http://puppet-lint.com">http://puppet-lint.com</a></p>
+
+<h4>Typical Usage</h4>
+
+<ul>
+  <li>Ensure that manifests comply with agreed coding styles</li>
+</ul>
+
+<h4>Example Scenarios</h4>
+
+<ul>
+  <li>Check for additional whitespace in code</li>
+  <li>Ensure braces and brackets are correctly positioned</li>
+  <li>Check for trailing newlines</li>
+</ul>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+  </body>
+
+</html>
