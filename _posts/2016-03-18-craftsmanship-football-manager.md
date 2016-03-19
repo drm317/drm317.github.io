@@ -58,7 +58,8 @@ top three teams in the top league receive 1,000,000 credits.
 All other teams receive 10,000 credits per game.
 
 10. Players have a 5% chance of being injured in a game. This affects
-a player's attack skill or defence skill by between 10% and 100%.
+a player's attack skill or defence skill by between 10% and 100%. Injuries last
+for between one to four games.
 
 11. The league tables should be recalculated after each game. They should
 show the team  name, number of games played, number of wins, number of
