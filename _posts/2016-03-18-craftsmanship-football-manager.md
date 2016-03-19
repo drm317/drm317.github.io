@@ -21,7 +21,7 @@ tags:
 <h3>Summary</h3>
 
 Develop a classic football management game using test-driven development.
-Refactor your code using the SOLID design principles.
+Refactor your code applying the SOLID design principles.
 
 Write a game that will allow you to play as the manager of a football (soccer) team.
 
