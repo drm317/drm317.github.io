@@ -5,10 +5,13 @@ header: About me
 group: navigation
 ---
 
-Software engineering consultant working in the UK. Interested 
-in Agile, Continuous Delivery and DevOps. 
+<img src="/images/daniel.jpeg" width="200" height="200" />
+
+
+Software engineering consultant working in the UK. Interested
+in Agile, Continuous Delivery and DevOps.
 <br><br>
-This blog (and the content within) is the work of Daniel Marlow. 
+This blog (and the content within) is the work of Daniel Marlow.
 The views expressed are mine and may not represent those of my employer.
 <br><br>
 Follow me<br>
